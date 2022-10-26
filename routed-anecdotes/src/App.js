@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Routes, Route, Link, useParams, useMatch, useNavigate } from 'react-router-dom'
-
+import { useField } from './hooks'
 
 
 const Menu = () => {
@@ -36,14 +36,16 @@ const Anecdote = ({ anecdote }) => {
   )
 }
 
-const AnecdoteList = ({ anecdotes }) => (
+const AnecdoteList = ({ anecdotes }) => {
+  console.log(anecdotes)
+  return (
   <div>
     <h2>Anecdotes</h2>
     <ul>
       {anecdotes.map(anecdote => <li key={anecdote.id} ><Link to={`/anecdotes/${anecdote.id}`} > {anecdote.content}</Link></li>)}
     </ul>
   </div>
-)
+)}
 
 const About = () => (
   <div>
@@ -68,25 +70,39 @@ const Footer = () => (
 )
 
 const CreateNew = (props) => {
-  const [content, setContent] = useState('')
-  const [author, setAuthor] = useState('')
-  const [info, setInfo] = useState('')
+  // const [content, setContent] = useState('')
+  // const [author, setAuthor] = useState('')
+  // const [info, setInfo] = useState('')
+
+  const content = useField('text')
+  const author = useField('text')
+  const info = useField('text')
 
   const navigate = useNavigate()
 
 
   const handleSubmit = (e) => {
-    console.log(props)
     e.preventDefault()
     props.addNew({
-      content,
-      author,
-      info,
+      content: content.value,
+      author: author.value,
+      info: info.value,
       votes: 0
     })
     navigate('/')
-    props.setNotification(`you added ${content}`)
+    props.setNotification(`you added ${content.value}`)
     props.timeout()
+  }
+
+  const handleReset = (event) => {
+    event.preventDefault()
+
+    const content = document.getElementById("content")
+    const author = document.getElementById("author")
+    const info = document.getElementById("info")
+    const input = [ content, author, info ]
+
+    input.forEach(field => field.value = '')
   }
 
   return (
@@ -95,17 +111,18 @@ const CreateNew = (props) => {
       <form onSubmit={handleSubmit}>
         <div>
           content
-          <input name='content' value={content} onChange={(e) => setContent(e.target.value)} />
+          <input id="content" {...content} />
         </div>
         <div>
           author
-          <input name='author' value={author} onChange={(e) => setAuthor(e.target.value)} />
+          <input id="author" {...author} />
         </div>
         <div>
           url for more info
-          <input name='info' value={info} onChange={(e)=> setInfo(e.target.value)} />
+          <input id="info" {...info} />
         </div>
         <button>create</button>
+        <button onClick={handleReset}>reset</button>
       </form>
     </div>
   )
@@ -145,6 +162,7 @@ const App = () => {
   
 
   const addNew = (anecdote) => {
+    console.log(anecdote)
     anecdote.id = Math.round(Math.random() * 10000)
     setAnecdotes(anecdotes.concat(anecdote))
   }
